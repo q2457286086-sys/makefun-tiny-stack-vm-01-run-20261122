@@ -127,11 +127,13 @@ function run(prog, input) {
       case 0x30: case 0x31: case 0x32: { // JMP, JZ, JNZ
         let off = prog[pc + 1] | (prog[pc + 2] << 8);
         if (off >= 32768) off -= 65536;
-        if (op !== 0x30) {
-          if ((t = need(1))) return t;
-          const v = st.pop();
-          if ((op === 0x31) === (v === 0)) { pc = next + off; continue; }
-        } else { pc = next + off; continue; }
+        if (op === 0x30) { pc = next + off; continue; }
+        if ((t = need(1))) return t;
+        const v = st.pop();
+        if ((op === 0x31 && v === 0) || (op === 0x32 && v !== 0)) {
+          pc = next + off;
+          continue;
+        }
         break;
       }
       case 0x33: { // CALL, unsigned target
